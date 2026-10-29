@@ -5,23 +5,34 @@
   n.addEventListener('click',function(e){if(e.target.tagName==='A')zamknij();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')zamknij();});
 
-  // dolny pasek dopiero po przewinieciu za pierwszy ekran
-  var mob=document.getElementById('mob'),cel=document.querySelector('.hero-cta')||document.querySelector('.podhero');
+  // dolny pasek dopiero po przewinieciu za przycisk w hero
+  var mob=document.getElementById('mob'),cel=document.querySelector('.hero-cta');
   if('IntersectionObserver' in window&&mob&&cel){
     new IntersectionObserver(function(w){var e=w[0];mob.classList.toggle('widac',!e.isIntersecting&&e.boundingClientRect.top<0);}).observe(cel);
   }
 
-  // formularz: bez serwera, przygotowuje wiadomosc e-mail
   var f=document.getElementById('form'),info=document.getElementById('form-info');
   if(!f)return;
+
+  // przycisk "Zamow wycene" przy usludze zaznacza ja w formularzu
+  document.querySelectorAll('[data-usluga]').forEach(function(a){
+    a.addEventListener('click',function(){
+      var v=a.getAttribute('data-usluga');
+      f.querySelectorAll('input[name="usluga"]').forEach(function(r){r.checked=(r.value===v);});
+    });
+  });
+
+  // formularz bez serwera: przygotowuje wiadomosc e-mail
   f.addEventListener('submit',function(e){
     e.preventDefault();
     var ok=true;
     ['imie','tel'].forEach(function(k){var el=f.elements[k];var pusty=!el.value.trim();el.classList.toggle('zle',pusty);if(pusty)ok=false;});
     if(!ok){info.textContent='Podaj imię i numer telefonu, żebyśmy mogli oddzwonić.';return;}
-    var temat='Zapytanie o instalację fotowoltaiczną';
-    var tresc='Dzień dobry, jestem zainteresowany/a instalacją fotowoltaiczną.\n\nMontaż: '+f.elements.gdzie.value+(f.elements.miejsce.value.trim()?'\nMiejscowość: '+f.elements.miejsce.value.trim():'')+(f.elements.tresc.value.trim()?'\n\n'+f.elements.tresc.value.trim():'')+'\n\nProszę o telefon: '+f.elements.tel.value.trim()+'\n'+f.elements.imie.value.trim();
+    var u=(f.querySelector('input[name="usluga"]:checked')||{}).value||'';
+    var v=function(k){return f.elements[k].value.trim();};
+    var temat='Prośba o wycenę: '+u;
+    var tresc='Dzień dobry, proszę o wycenę: '+u+'.'+(v('miejsce')?'\nMiejscowość: '+v('miejsce'):'')+(v('tresc')?'\n\n'+v('tresc'):'')+'\n\nTelefon: '+v('tel')+(v('email')?'\nE-mail: '+v('email'):'')+'\n'+v('imie');
     info.textContent='Dziękujemy. Otwieramy program pocztowy z gotową wiadomością do SolarMax Technics.';
-    location.href='mailto:solarmaxtechnics@gmail.com?subject='+encodeURIComponent(temat)+'&body='+encodeURIComponent(tresc);
+    location.href='mailto:biuro@solarmax.com.pl?subject='+encodeURIComponent(temat)+'&body='+encodeURIComponent(tresc);
   });
 })();
